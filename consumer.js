@@ -1,20 +1,16 @@
 import { asyncRun } from "./py-worker.js";
 
 const script = `
-    import statistics
-    from js import A_rank
-    statistics.stdev(A_rank)
+    from mymodule import webtest
+    webtest.get_html()
 `;
-
-const context = {
-  A_rank: [0.8, 0.4, 1.2, 3.7, 2.6, 5.8],
-};
 
 async function main() {
   try {
-    const { results, error } = await asyncRun(script, context);
+    const { results, error } = await asyncRun(script);
     if (results) {
       console.log("pyodideWorker return results: ", results);
+      document.getElementById("content").innerHTML = results;
     } else if (error) {
       console.log("pyodideWorker error: ", error);
     }

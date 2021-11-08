@@ -9,7 +9,11 @@ async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide({
     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/",
   });
-  await self.pyodide.loadPackage(["numpy", "pytz"]);
+  await self.pyodide.loadPackage("micropip");
+  await self.pyodide.runPythonAsync(`
+    import micropip
+    await micropip.install('./mymodule/dist/mymodule-1.0.0-py3-none-any.whl')
+  `);
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 
