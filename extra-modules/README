@@ -1,0 +1,27 @@
+Kolibri depends on SQLAlchemy, which has C code, hence we need to build
+a pyodide module for it.
+
+I largely followed the procedure here, to create meta.yaml:
+https://pyodide.org/en/stable/development/new-packages.html
+
+As a prerequisite that basically means you have to build (at least part of)
+pyiodide and that is tricky.
+
+Build from source instructions:
+https://pyodide.org/en/stable/development/building-from-sources.html
+
+I wasn't able to get those instructions working on Debian Bullseye toolbox
+container inside Endless OS - with others reporting similar failures at
+present. I wasn't able to use podman to do their docker approach either
+- assorted difficulties there.
+
+In the end I installed Ubuntu and used their docker setup to build it.
+I couldn't figure out how to install the end result though.
+Ended up using pip to install pyodide-build from pypi.
+Then copy Makefile.envs /src/.docker_home/.local/lib/python3.9/Makefile.envs
+Now "pyodide-build mkpkg" works and produces meta.yaml (but it gets placed
+in .local/lib/ too).
+Put that in the packages/sqlalchemy directory and now you can build.
+
+Trust the result calling it sqlalchemy not SQLAlchemy. The name gets converted
+to lowercase during building and loading, seems to be intentional.

@@ -10,6 +10,7 @@ async function loadPyodideAndPackages() {
     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/",
   });
   await self.pyodide.loadPackage(["micropip", "setuptools"]);
+  await self.pyodide.loadPackage("extra-modules/sqlalchemy.js");
   await self.pyodide.runPythonAsync(`
     import micropip
     await micropip.install('kolibri/dist/kolibri-0.15.0b1.dev0+git.15.gc3238a85-py2.py3-none-any.whl')
