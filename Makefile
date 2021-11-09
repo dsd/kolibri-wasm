@@ -49,6 +49,11 @@ kolibri-reqs/whlmanifest.txt: kolibri-reqs/base.txt patched-kolibri-reqs
 		-e '/^python-dateutil-/d' \
 		-e '/^webencodings-/d' \
 		kolibri-reqs/_whlmanifest.txt
+	# move le_utils to end of file, because it needs to be loaded after
+	# pycountry
+	sed -i -n \
+		'/le_utils/H;//!p;$$x;$$s/.//p' \
+		kolibri-reqs/_whlmanifest.txt
 	# move requests to top of file, because it has a specific urllib3
 	# requirement to satisfy (before another dep brings in the latest version)
 	sed \
@@ -59,7 +64,25 @@ patched-kolibri-reqs: \
 kolibri-reqs/django-ipware-1.1.6-py3-none-any.whl \
 kolibri-reqs/configobj-5.1.0.dev0-py2.py3-none-any.whl \
 kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl \
-kolibri-reqs/future-0.16.0-py3-none-any.whl
+kolibri-reqs/future-0.16.0-py3-none-any.whl \
+kolibri-reqs/le_utils-0.1.34-py3-none-any.whl \
+kolibri-reqs/pycountry-17.5.14-py3-none-any.whl
+
+# Kolibri depends on le-utils==0.1.34
+# There is no wheel on pypi, build one here
+kolibri-reqs/le_utils-0.1.34-py3-none-any.whl:
+	pip3 download -d . --no-deps le-utils==0.1.34
+	tar -xf le-utils-0.1.34.tar.gz
+	cd le-utils-0.1.34 && python3 setup.py bdist_wheel
+	cp le-utils-0.1.34/dist/le_utils-0.1.34-py3-none-any.whl $@
+
+# le-utils depends on pycountry==17.5.14
+# There is no wheel on pypi, build one here
+kolibri-reqs/pycountry-17.5.14-py3-none-any.whl:
+	pip3 download -d . --no-deps pycountry==17.5.14
+	tar -xf pycountry-17.5.14.tar.gz
+	cd pycountry-17.5.14 && python3 setup.py bdist_wheel
+	cp pycountry-17.5.14/dist/pycountry-17.5.14-py3-none-any.whl $@
 
 # morango depends on future==0.16.0
 # There is no wheel on pypi, build one here
@@ -94,6 +117,8 @@ kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl:
 	cp configobj/dist/validate-1.1.0.dev0-py2.py3-none-any.whl $@
 
 clean:
+	rm -rf pycountry-17.5.14*
+	rm -rf le-utils-0.1.34*
 	rm -rf future-0.16.0 future-0.16.0.tar.gz
 	rm -rf django-ipware-1.1.6 django-ipware-1.1.6.tar.gz
 	rm -rf kolibri-reqs/
