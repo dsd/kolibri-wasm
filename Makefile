@@ -113,7 +113,7 @@ kolibri-reqs/configobj-5.1.0.dev0-py2.py3-none-any.whl:
 
 # configobj also provides the validate module, also needed by Kolibri
 kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl:
-	cd configobj && python3 setup_validate.py bdist_wheel
+	cd configobj && PYTHONPATH=src python3 setup_validate.py bdist_wheel
 	cp configobj/dist/validate-1.1.0.dev0-py2.py3-none-any.whl $@
 
 clean:
