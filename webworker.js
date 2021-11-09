@@ -9,11 +9,28 @@ async function loadPyodideAndPackages() {
   self.pyodide = await loadPyodide({
     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/",
   });
-  await self.pyodide.loadPackage("micropip");
+  await self.pyodide.loadPackage(["micropip", "setuptools"]);
   await self.pyodide.runPythonAsync(`
     import micropip
-    await micropip.install('./mymodule/dist/mymodule-1.0.0-py3-none-any.whl')
+    await micropip.install('kolibri/dist/kolibri-0.15.0b1.dev0+git.15.gc3238a85-py2.py3-none-any.whl')
   `);
+
+  const response = await fetch('kolibri-reqs/whlmanifest.txt');
+  const text = await response.text();
+  var lines = text.split("\n");
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].length == 0)
+      continue;
+    console.log("load " + lines[i]);
+    url = 'kolibri-reqs/' + lines[i];
+    self["url"] = url;
+    await self.pyodide.runPythonAsync(`
+      import micropip
+      from js import url
+      await micropip.install(url)
+  `);
+
+  }
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 

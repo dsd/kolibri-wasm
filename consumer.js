@@ -1,8 +1,9 @@
 import { asyncRun } from "./py-worker.js";
 
 const script = `
-    from mymodule import webtest
-    webtest.get_html()
+    import kolibri
+    from kolibri.deployment.default.wsgi import application
+    str(application)
 `;
 
 async function main() {

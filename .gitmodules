@@ -1,0 +1,6 @@
+[submodule "configobj"]
+	path = configobj
+	url = git@github.com:DiffSK/configobj.git
+[submodule "kolibri"]
+	path = kolibri
+	url = https://github.com/learningequality/kolibri
