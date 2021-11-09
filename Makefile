@@ -19,6 +19,8 @@ submodule:
 kolibri-wheel: kolibri/dist/kolibri-0.15.0b1.dev0+git.15.gc3238a85-py2.py3-none-any.whl
 kolibri/dist/kolibri-%.whl:
 	cd kolibri && pipenv --python 3
+	cd kolibri && git reset --hard HEAD
+	cat kolibri-disable-logging.py >> kolibri/kolibri/deployment/default/settings/base.py
 	echo KOLIBRI_RUN_MODE=dev > kolibri/.env
 	cd kolibri && pipenv run pip install -r requirements.txt --upgrade
 	cd kolibri && pipenv run pip install -r requirements/dev.txt --upgrade 
