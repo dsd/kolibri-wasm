@@ -34,7 +34,6 @@ kolibri-reqs/base.txt:
 	cp kolibri/requirements/base.txt kolibri-reqs/_base.txt
 	# remove deps that we provide patched versions of
 	sed \
-		-e '/morango==/d' \
 		-e '/configobj==/d' \
 		kolibri-reqs/_base.txt > $@
 
@@ -57,21 +56,18 @@ kolibri-reqs/whlmanifest.txt: kolibri-reqs/base.txt patched-kolibri-reqs
 		kolibri-reqs/_whlmanifest.txt > $@
 
 patched-kolibri-reqs: \
-kolibri-reqs/morango-0.6.6-py2.py3-none-any.whl \
 kolibri-reqs/django-ipware-1.1.6-py3-none-any.whl \
 kolibri-reqs/configobj-5.1.0.dev0-py2.py3-none-any.whl \
-kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl
+kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl \
+kolibri-reqs/future-0.16.0-py3-none-any.whl
 
-# Kolibri requires morango
-# The upstream wheel depends on future, which doesn't have a wheel
-# Just remove that dependency since __future__ is included in pyodide
-# (FIXME why is this not auto-detected?)
-kolibri-reqs/morango-0.6.6-py2.py3-none-any.whl:
-	pip3 download --no-binary :all: --no-deps -d . morango==0.6.6
-	tar -xf morango-0.6.6.tar.gz
-	sed -i '/future==/d' morango-0.6.6/setup.py
-	cd morango-0.6.6 && python3 setup.py bdist_wheel
-	cp morango-0.6.6/dist/morango-0.6.6-py2.py3-none-any.whl $@
+# morango depends on future==0.16.0
+# There is no wheel on pypi, build one here
+kolibri-reqs/future-0.16.0-py3-none-any.whl:
+	pip3 download -d . --no-deps future==0.16.0
+	tar -xf future-0.16.0.tar.gz
+	cd future-0.16.0 && python3 setup.py bdist_wheel
+	cp future-0.16.0/dist/future-0.16.0-py3-none-any.whl $@
 
 # This is a dependency of one of Kolibri's requirements
 # It doesn't have a wheel available, build one ourselves
@@ -98,7 +94,7 @@ kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl:
 	cp configobj/dist/validate-1.1.0.dev0-py2.py3-none-any.whl $@
 
 clean:
-	rm -rf morango-0.6.6 morango-0.6.6.tar.gz
+	rm -rf future-0.16.0 future-0.16.0.tar.gz
 	rm -rf django-ipware-1.1.6 django-ipware-1.1.6.tar.gz
 	rm -rf kolibri-reqs/
 	cd kolibri && pipenv --rm || :
