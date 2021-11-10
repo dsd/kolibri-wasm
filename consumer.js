@@ -54,6 +54,7 @@ async function main() {
     const { results, error } = await asyncRun(script);
     if (results) {
       var doc = new DOMParser().parseFromString(results, "text/html");
+      document.querySelector("head").innerHTML += doc.querySelector("head").innerHTML;
       document.querySelector("body").innerHTML = doc.querySelector("body").innerHTML;
     } else if (error) {
       console.log("pyodideWorker error: ", error);
