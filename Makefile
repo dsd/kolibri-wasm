@@ -30,6 +30,7 @@ build/kolibri-%.whl:
 	cd kolibri && pipenv run npm install -g yarn
 	cd kolibri && pipenv run yarn install
 	cd kolibri && pipenv run yarn run build
+	cd kolibri && pipenv run make preseeddb
 	cd kolibri && python3 setup.py bdist_wheel
 	mkdir -p build
 	cp kolibri/dist/$(@F) $@

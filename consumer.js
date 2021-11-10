@@ -3,10 +3,7 @@ import { asyncRun } from "./py-worker.js";
 const script = `
 import io
 from kolibri.utils.main import initialize
-from django.core.management import execute_from_command_line
-
 initialize()
-execute_from_command_line(["kolibri manage", "migrate"])
 
 from kolibri.deployment.default.wsgi import application
 
