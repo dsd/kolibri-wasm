@@ -4,19 +4,32 @@
       <script src="https://cdn.jsdelivr.net/pyodide/v0.18.1/full/pyodide.js"></script>
   </head>
   <body>
-	<h1>Python in web browser test</h1>
+	<h1>Kolibri in your web browser</h1>
 
-	The following tech demo shows:
-	<ul>
-	<li>A javascript worker thread created within your browser</li>
-	<li>The Python interpreter running in the worker thread</li>
-	<li>A small python module made available for use within the Python environment.</li>
-	<li>HTML code being generated and returned from Python and then shown in the webpage below.</li>
-	</ul>
+    <p>
+	Kolibri is normally accessed using a web browser (or embedded web browser),
+    however it relies on a Kolibri server backend which is written in Python.
+    This architecture brings some complexity to deploying Kolibri - a suitable
+    Python interpreter must be available for your OS, you have to run it, it
+    has to open a socket, etc. Notably, this complicates the prospect of
+    Kolibri as a ChromeOS app.
+    </p>
 
-	This is the high-level shape that I will attempt to import Kolibri into.
-	<hr />
+    <p>
+    This experiment runs the Kolibri server entirely within your browser.
+    It does this by creating a javascript thread where a Python interpreter is run (pyodide, using WebAssembly).
+    </p>
+
+    <p>
+    It takes a few minutes to load - one of the first learnings from this experiment. Watch the javascript console to see things moving.
+    </p>
+
+    <p>
+    Once loaded, this page will be replaced by the Kolibri loading animation.
+    (More work ongoing to make it progress beyond this stage!)
+    </p>
+
+    <p><b>Loading, please wait</b></p>
     <script type="module" src="consumer.js"></script>
-	<div id="content">Loading, please wait...</div>
   </body>
 </html>
