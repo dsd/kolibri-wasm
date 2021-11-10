@@ -135,3 +135,6 @@ clean:
 	rm -rf build
 	cd kolibri && pipenv --rm || :
 	git submodule foreach git clean -x -d -f
+
+serve:
+	cd build && python3 -m http.server
