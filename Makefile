@@ -1,6 +1,6 @@
 export CC="ccache gcc"
 
-build: deps submodule kolibri-wheel build/kolibri-reqs/whlmanifest.txt extra-mods build/webworker.js build/py-worker.js build/consumer.js build/index.html
+build: deps submodule kolibri-wheel build/kolibri-reqs/whlmanifest.txt extra-mods build/webworker.js build/consumer.js build/index.html
 
 deps:
 	#sudo apt-get install ccache pkg-config gfortran f2c cmake texinfo
@@ -122,7 +122,7 @@ build/kolibri-reqs/validate-1.1.0.dev0-py2.py3-none-any.whl:
 	cd configobj && PYTHONPATH=src python3 setup_validate.py bdist_wheel
 	cp configobj/dist/validate-1.1.0.dev0-py2.py3-none-any.whl $@
 
-build/webworker.js build/py-worker.js build/consumer.js build/index.html: build/%: %
+build/webworker.js build/consumer.js build/index.html: build/%: %
 	cp $< $@
 
 extra-mods:
