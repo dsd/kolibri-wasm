@@ -34,23 +34,72 @@ async function loadPyodideAndPackages() {
   }
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
+let initialized = false;
+
+async function initializeKolibri() {
+  await self.pyodide.runPythonAsync(`
+    from kolibri.utils.main import initialize
+    initialize()
+  `);
+  initialized = true;
+}
+
+async function handleRequest(env) {
+  self.pycontext = {
+    'SERVER_NAME': 'fakekolibri.com',
+    'SERVER_PORT': '80',
+    ...env
+  };
+  const script = `
+from kolibri.deployment.default.wsgi import application
+from js import pycontext
+import io
+
+def request(env):
+    headers = []
+    env["wsgi.input"] = io.StringIO()
+
+    def start_response(status, response_headers, exc_info=None):
+        print(status, response_headers)
+        headers[:] = [status, response_headers]
+
+    result = application(env, start_response)
+    return (result, headers[0], headers[1])
+
+env = pycontext.to_py();
+ret = ""
+while True:
+    print("request " + env['PATH_INFO'])
+    result, status, headers = request(env)
+    if status.startswith("302 "):
+        for hdr in headers:
+            if hdr[0] == "Location":
+                env['PATH_INFO'] = hdr[1]
+                break
+    elif status.startswith("500 "):
+        print("ERROR 500")
+        break
+    elif status.startswith("200 "):
+        print("200!")
+        for data in result:
+            ret += data.decode('utf-8')
+        break
+
+ret
+`;
+
+    await self.pyodide.loadPackagesFromImports(script);
+    return self.pyodide.runPythonAsync(script);
+}
 
 self.onmessage = async (event) => {
   // make sure loading is done
   await pyodideReadyPromise;
-  // Don't bother yet with this line, suppose our API is built in such a way:
-  const { python, ...context } = event.data;
-  // The worker copies the context in its own "memory" (an object mapping name to values)
-  for (const key of Object.keys(context)) {
-    self[key] = context[key];
-  }
-  // Now is the easy part, the one that is similar to working in the main thread:
-  try {
-    await self.pyodide.loadPackagesFromImports(python);
-    let results = await self.pyodide.runPythonAsync(python);
-    self.postMessage({ results });
-  } catch (error) {
-    self.postMessage({ error: error.message });
-  }
+
+  if (!initialized)
+    await initializeKolibri();
+
+  result = await handleRequest(event.data['env']);
+  self.postMessage({ 'id': event.data['id'], 'response': result });
 };
 

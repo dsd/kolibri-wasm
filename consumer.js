@@ -1,80 +1,34 @@
 const pyodideWorker = new Worker("./webworker.js");
 
-function run(script, context, onSuccess, onError) {
-  pyodideWorker.onerror = onError;
-  pyodideWorker.onmessage = (e) => onSuccess(e.data);
-  pyodideWorker.postMessage({
-    ...context,
-    python: script,
+pyodideWorker.request_id = 0;
+pyodideWorker.resolvers = {};
+
+pyodideWorker.onmessage = function(event) {
+  const id = event.data['id'];
+  this.resolvers[id](event.data['response']);
+  delete this.resolvers[id];
+}
+
+function sendRequest(env) {
+  const id = pyodideWorker.request_id++;
+  pyodideWorker.postMessage({ 'id': id, 'env': env });
+  return new Promise(resolve => pyodideWorker.resolvers[id] = resolve);
+}
+
+async function doRequest(method, path) {
+  return sendRequest({
+    'REQUEST_METHOD': method,
+    'PATH_INFO': path
   });
 }
 
-// Transform the run (callback) form to a more modern async form.
-// This is what allows to write:
-//    const {results, error} = await asyncRun(script, context);
-// Instead of:
-//    run(script, context, successCallback, errorCallback);
-function asyncRun(script, context) {
-  return new Promise(function (onSuccess, onError) {
-    run(script, context, onSuccess, onError);
-  });
-}
-
-const script = `
-import io
-from kolibri.utils.main import initialize
-initialize()
-
-from kolibri.deployment.default.wsgi import application
-
-def request(path):
-    headers = []
-    env = {
-        "wsgi.input": io.StringIO(),
-        "REQUEST_METHOD": "GET",
-        "SERVER_NAME": "fakekolibri.com",
-        "SERVER_PORT": "80",
-        "PATH_INFO": path,
-    }
-
-    def start_response(status, response_headers, exc_info=None):
-        print(status, response_headers)
-        headers[:] = [status, response_headers]
-
-    result = application(env, start_response)
-    return (result, headers[0], headers[1])
-
-path = "/"
-ret = "foo"
-while True:
-    print("request " + path)
-    result, status, headers = request(path)
-    if status.startswith("302 "):
-        for hdr in headers:
-            if hdr[0] == "Location":
-                path = hdr[1]
-                break
-    elif status.startswith("500 "):
-        print("ERROR 500")
-        break
-    elif status.startswith("200 "):
-        print("200!")
-        for data in result:
-            ret = data.decode('utf-8')
-        break
-
-ret
-`;
-
-async function main() {
+async function start_app() {
   try {
-    const { results, error } = await asyncRun(script);
+    results = await doRequest('GET', '/');
     if (results) {
       document.open();
       document.write(results);
       document.close();
-    } else if (error) {
-      console.log("pyodideWorker error: ", error);
     }
   } catch (e) {
     console.log(
@@ -83,4 +37,4 @@ async function main() {
   }
 }
 
-main();
+start_app();
