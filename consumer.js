@@ -9,17 +9,18 @@ pyodideWorker.onmessage = function(event) {
   delete this.resolvers[id];
 }
 
-function sendRequest(env) {
+function sendRequest(env, body) {
   const id = pyodideWorker.request_id++;
-  pyodideWorker.postMessage({ 'id': id, 'env': env });
+  pyodideWorker.postMessage({ 'id': id, 'env': env, 'body': body });
   return new Promise(resolve => pyodideWorker.resolvers[id] = resolve);
 }
 
-async function doRequest(method, path) {
+async function doRequest(method, path, body='', contentType='') {
   return sendRequest({
     'REQUEST_METHOD': method,
-    'PATH_INFO': path
-  });
+    'PATH_INFO': path,
+    'CONTENT_TYPE': contentType,
+  }, body);
 }
 
 async function start_app() {

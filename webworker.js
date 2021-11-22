@@ -44,20 +44,24 @@ async function initializeKolibri() {
   initialized = true;
 }
 
-async function handleRequest(env) {
+async function handleRequest(env, body='') {
   self.pycontext = {
     'SERVER_NAME': 'fakekolibri.com',
     'SERVER_PORT': '80',
     ...env
   };
+  self.pybody = body;
+
   const script = `
 from kolibri.deployment.default.wsgi import application
-from js import pycontext
+from js import pycontext, pybody
 import io
 
 def request(env):
     headers = []
-    env["wsgi.input"] = io.StringIO()
+    body = pybody.encode('utf-8')
+    env["wsgi.input"] = io.BytesIO(body)
+    env["CONTENT_LENGTH"] = len(body)
 
     def start_response(status, response_headers, exc_info=None):
         print(status, response_headers)
@@ -99,7 +103,7 @@ self.onmessage = async (event) => {
   if (!initialized)
     await initializeKolibri();
 
-  result = await handleRequest(event.data['env']);
+  result = await handleRequest(event.data['env'], event.data['body']);
   self.postMessage({ 'id': event.data['id'], 'response': result });
 };
 
