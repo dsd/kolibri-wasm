@@ -22,6 +22,7 @@ build/kolibri-%.whl:
 	cd kolibri && git reset --hard HEAD
 	cat kolibri-disable-logging.py >> kolibri/kolibri/deployment/default/settings/base.py
 	sed -i -e 's/inline = False/inline = True/' kolibri/kolibri/core/webpack/hooks.py
+	cp baseClient.js kolibri/kolibri/core/assets/src/core-app/baseClient.js
 	echo KOLIBRI_RUN_MODE=dev > kolibri/.env
 	cd kolibri && pipenv run pip install -r requirements.txt --upgrade
 	cd kolibri && pipenv run pip install -r requirements/dev.txt --upgrade 
