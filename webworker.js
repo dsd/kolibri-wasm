@@ -68,22 +68,22 @@ def request(env):
 
 env = pycontext.to_py();
 ret = ""
-while True:
+status = None
+while status is None or status.startswith("302 "):
     print("request " + env['PATH_INFO'])
     result, status, headers = request(env)
+    print(status)
     if status.startswith("302 "):
         for hdr in headers:
             if hdr[0] == "Location":
                 env['PATH_INFO'] = hdr[1]
                 break
-    elif status.startswith("500 "):
-        print("ERROR 500")
-        break
-    elif status.startswith("200 "):
-        print("200!")
-        for data in result:
-            ret += data.decode('utf-8')
-        break
+
+if status.startswith("200 ") or status.startswith("201 "):
+    for data in result:
+        ret += data.decode('utf-8')
+else:
+  print("unhandled return")
 
 ret
 `;
